@@ -1,0 +1,18 @@
+[0156012198]
+title = Anahit
+pages = 12
+count = 4
+available_copies = 0
+
+[0156012197]
+title = The Count of Monte Cristo
+pages = 1276
+copies = 3
+available_copies = 6
+
+[0156912197]
+title = The Little Prince
+pages = 34
+copies = 3
+available_copies = 0
+
