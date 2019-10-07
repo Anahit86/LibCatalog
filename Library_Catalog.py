@@ -1,13 +1,15 @@
 from configparser import ConfigParser
 import time
 import configparser
+import datetime
+import sys
+
 
 
 parser= ConfigParser()
 config_file_list= ["books.txt","users.txt"]
 file1= config_file_list[0]
 file2 = config_file_list[1]
-
 
 fil1 = configparser.ConfigParser()
 fil2 = configparser.ConfigParser()
@@ -21,13 +23,19 @@ ac = [fil1[s]['available_copies'] for s in ISBN1]
 userid=fil2.sections()
 username=[fil2[s]["name"] for s in userid]
 
-def create_new_file(section,option,value):
+def update_temp_file(book, name,*argv):
     config=configparser.ConfigParser()
     config.read("temp.txt")
-    config.set(section,option,value)
+    sec = book + "_" + name
+    if config.has_section(sec):
+        config.set(sec,argv[0],argv[1])
+    else:
+        config.add_section(sec)
+        config.set(sec,argv[0],argv[1])
     with open("temp.txt", 'r+') as f:
         config.write(f)
         f.close()
+
 
 class user:
     def __init__(self,name):
@@ -63,21 +71,17 @@ class book:
                     break
                     return self.book_name
 
-
 def reserve_book(book,name):
-    print("This book is now anavailable, please type YES if you want to reserve, or NO if you don't")
+    print("This book is now unavailable, please type YES if you want to reserve, or NO if you don't")
     wish = input()
     if wish =="YES":
-        config=configparser.ConfigParser()
-        config.read("temp.txt")
-        a = config["reserve"]["name"]
-        create_new_file("reserve","name",a+ ","+user1.name)
+        update_temp_file(book,name,"reserve_user",name)
 
 def available_book(book):
     for ip in ISBN1:
         if book==fil1[ip]["title"]:
             print("The available count of this book is %s" %(fil1[ip]['available_copies']))
-def check_out_book(book):
+def check_out_book(book,name):
     for ip in ISBN1:
         if book==fil1[ip]["title"]:
             s = fil1.getint(ip,'available_copies')
@@ -89,12 +93,14 @@ def check_out_book(book):
                 with open ("books.txt", "r+") as f:
                     fil1.write(f)
                     f.close()
-                checkout_time= time.asctime(time.localtime(time.time()))
-#                create_new_file("reserve"","check_out_time",checkout_time)
+                checkout_time=datetime.date.today()
+                print(checkout_time)
+                update_temp_file(book,name,"check_out_time",str(checkout_time))
+                update_temp_file(book,name,"check_out_by_user",name)
                 break
             elif s==0:
-                reserve_book(user1.name,book)
-def return_book(book):
+                reserve_book(book,name)
+def return_book(book,name):
     for ip in ISBN1:
         if book==fil1[ip]["title"]:
             c = fil1.getint(ip,'available_copies')
@@ -104,14 +110,15 @@ def return_book(book):
             with open ("books.txt", "r+") as f:
                 fil1.write(f)
                 f.close()
-            return_time= time.asctime(time.localtime(time.time()))
-#            create_new_file("reserve","return_time",return_time)
+            return_time=datetime.date.today()
+            update_temp_file(book,name,"return_time",str(return_time))
             print("The book is returned succesfully")
-def reserve_user_list(file):
+def reserve_user_list(file,book):
     config = configparser.ConfigParser()
     config.read(file)
-    print(config ["reserve"]["name"])
-    return config ["reserve"]["name"]
+    S= config.sections()
+    L= [config[i]["reserve_user"] for i in S if config.has_option(i,"reserve_user")]
+    print(L)
 def add_user():
     nameid= input("enter the username id:")
     name = input("enter user name for adding the list:")
@@ -165,67 +172,130 @@ def remove_book():
         with open('books.txt', 'w') as f:
             parser.write(f)
             f.close()
-"""
-User checkout book
-- Allow user to checkout a book. The value of available copies of the book should
-be reduced. Save the time of check-out to further check if the book is overdue
-and compute the fine.
-"""
-## If no available copies
-"""
-User reserve book (subscribe)
-- Allow user to put a book in reserve if it is not available
-"""
-#user1 = user(username)
-#user1.check_user()
-#book1 = book(ISBN1, tit,ac)
-#book1.check_book()
-#check_out_book(book1.book_name)
-"""
-User return book
-- Allow user to return a book. The value of available copies of the book should be
-increased.
-"""
-#book1 = book(ISBN1, tit,ac)
-#book1.check_book()
-#return_book(book1.book_name)
-"""
-Get subscribers of the book
-- Get the list of users that have put the book on reserve
-"""
-#user1 = user(username)
-#user1.check_user()
-#book1 = book(ISBN1, tit,ac)
-#book1.check_book()
-#reserve_user_list("temp.txt")
-"""
-Check book is available
-- Check if available copy of book is present
-"""
-#book1 = book(ISBN1, tit,ac)
-#book1.check_book()
-#available_book(book1.book_name)
-""""
-Add user
-- Add user info to the LibraryCatalog, so that it’s saved in Users info file in same
-format as others. Get info from standard input.
-"""
-#add_user()
-"""
-Add book (get info from standard input)
-- Add book info to the LibraryCatalog, so that it’s saved in Books info file in same
-format as others. Get info from standard input.
-"""
-#add_book()
-"""
-Remove user
-- Remove user info to the LibraryCatalog, so that it’s removed form Users info
-file.
-"""
-#remove_user()
-"""
-Remove book
-- Remove book info to the LibraryCatalog, so that it’s removed form Users info
-file.
-"""
-#remove_book()
+def overdue_books(file,name):
+    from datetime import datetime
+    config = configparser.ConfigParser()
+    config.read(file)
+    S = config.sections()
+    OB =list()
+    OD = 0
+    for i in S:
+        if name in i and config.has_option(i,"check_out_time") and config.has_option(i,"return_time"):
+            t1 =config[i]["check_out_time"]
+            t2 =config[i]["return_time"]
+            L= datetime.strptime(t2,'%Y-%m-%d')-datetime.strptime(t1,'%Y-%m-%d')
+            if L.days> 90:
+                for book in tit:
+                    if book in i:
+                        print("the overdue book list checked out by %s" %(name))
+                        OB.append(book)
+                        OD =((OD + (L.days-90)))
+                        print(OB)
+            else:
+                print("You have no overdue books")
+    print("The total fine is %s$" %((OD/7)*5))
+def overdue_book_fine(file,name,book):
+    from datetime import datetime
+    config = configparser.ConfigParser()
+    config.read(file)
+    S = config.sections()
+    sec=book + "_" + name
+    OB =list()
+    if sec in S:
+        if config.has_option(sec,"check_out_time") and config.has_option(sec,"return_time"):
+            t1 =config[sec]["check_out_time"]
+            t2=config[sec]["return_time"]
+            L= datetime.strptime(t2,'%Y-%m-%d')-datetime.strptime(t1,'%Y-%m-%d')
+            if L.days> 90:
+                OD=L.days-90
+                fine =(OD/7)*5
+                print("this book is overdue %s days.the fine is %s$  for user %s" %(OD,fine,name))
+                return fine
+            else:
+                print("This book is not overdue")
+        elif config.has_option(i,"check_out_time") or config.has_option(i,"return_time"):
+            print("you have not check_out/return the book")
+def checkout_user_list(file,book):
+    config = configparser.ConfigParser()
+    config.read(file)
+    S= config.sections()
+    L= [config[i]["check_out_by_user"] for i in S if book in i and config.has_option(i,"check_out_by_user") ]
+    print(L)
+
+def main():
+    donw=False
+    while donw==False:
+        print("""\
+            Please enter the the action number which you want to do:
+            ===========================
+            1. Checkout a book
+            2. Return Book
+            3. Reserve Book
+            4. Get reserve user list
+            5. Overdue books
+            6. Get user overdue book fine
+            7. Abailable of book
+            8. User list who checked out the book
+            9. Add user
+            10. Add Book
+            11. Remove user
+            12. Remove book
+            13. Exit
+
+            """)
+        case = int(input())
+        if case ==1:
+            user1 = user(username)
+            user1.check_user()
+            book1 = book(ISBN1, tit,ac)
+            book1.check_book()
+            check_out_book(book1.book_name,user1.name)
+        if case ==2:
+            user1 = user(username)
+            user1.check_user()
+            book1 = book(ISBN1, tit,ac)
+            book1.check_book()
+            return_book(book1.book_name,user1.name)
+        if case ==3:
+            user1 = user(username)
+            user1.check_user()
+            book1 = book(ISBN1, tit,ac)
+            book1.check_book()
+            check_out_book(book1.book_name)
+        if case ==4:
+            user1 = user(username)
+            user1.check_user()
+            book1 = book(ISBN1, tit,ac)
+            book1.check_book()
+            reserve_user_list("temp.txt",book1.book_name)
+        if case ==5:
+            user1 = user(username)
+            user1.check_user()
+            overdue_books("temp.txt",user1.name)
+        if case ==6:
+            user1 = user(username)
+            user1.check_user()
+            book1 = book(ISBN1, tit,ac)
+            book1.check_book()
+            overdue_book_fine("temp.txt",user1.name,book1.book_name)
+        if case ==7:
+            book1 = book(ISBN1, tit,ac)
+            book1.check_book()
+            available_book(book1.book_name)
+        if case ==8:
+            book1 = book(ISBN1, tit,ac)
+            book1.check_book()
+            checkout_user_list("temp.txt",book1.book_name)
+        if case ==9:
+            add_user()
+        if case ==10:
+            add_book()
+        if case ==11:
+            remove_user()
+        if case ==12:
+            remove_book()
+        if case==13:
+            sys.exit()
+
+
+main()

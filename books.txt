@@ -2,17 +2,23 @@
 title = Anahit
 pages = 12
 count = 4
-available_copies = 0
+available_copies = 3
 
 [0156012197]
 title = The Count of Monte Cristo
 pages = 1276
 copies = 3
-available_copies = 6
+available_copies = 4
 
 [0156912197]
 title = The Little Prince
 pages = 34
 copies = 3
-available_copies = 0
+available_copies = 3
+
+[8904568732]
+title = "Kolobok
+pages = 4
+copies = 6
+available_copies = 3
 
