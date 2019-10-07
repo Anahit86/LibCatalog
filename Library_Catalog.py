@@ -94,6 +94,12 @@ def check_out_book(book,name):
                     fil1.write(f)
                     f.close()
                 checkout_time=datetime.date.today()
+                for i in S:
+                    if book +"_"+name==i and config.has_option(i,"reserve_user"):
+                        config.remove_option(i,"reserve_user")
+                        with open('temp.txt', 'w') as f:
+                            config.write(f)
+                            f.close()
                 print(checkout_time)
                 update_temp_file(book,name,"check_out_time",str(checkout_time))
                 update_temp_file(book,name,"check_out_by_user",name)
