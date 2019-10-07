@@ -18,7 +18,6 @@ check_out_by_user = Anna
 return_time = 2019-12-06
 
 [The Little Prince_Leo]
-reserve_user = Leo
 return_time = 2019-10-07
 check_out_time = 2019-10-07
 check_out_by_user = Leo
