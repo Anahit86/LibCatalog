@@ -82,6 +82,9 @@ def available_book(book):
         if book==fil1[ip]["title"]:
             print("The available count of this book is %s" %(fil1[ip]['available_copies']))
 def check_out_book(book,name):
+    config = configparser.ConfigParser()
+    config.read(file)
+    S = config.sections()
     for ip in ISBN1:
         if book==fil1[ip]["title"]:
             s = fil1.getint(ip,'available_copies')
