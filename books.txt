@@ -1,8 +1,12 @@
 [0156012198]
 title = Anahit
 pages = 12
-count = 4
-available_copies = 3
+copies = 4
+available_copies = 11
+checkouttime_for_Anahit = 2019-06-02
+checkout = Anahit,Anna
+returntime_for_Anahit = 2019-11-02
+checkouttime_for_Anna = 2019-11-08
 
 [0156012197]
 title = The Count of Monte Cristo
@@ -14,11 +18,17 @@ available_copies = 4
 title = The Little Prince
 pages = 34
 copies = 3
-available_copies = 3
+available_copies = 1
+checkouttime_for_Anahit = 2019-07-02
+checkout = Anahit,Anna
+checkouttime_for_Anna = 2019-11-02
+returntime_for_Anna = 2019-11-15
+returntime_for_Anahit = 2019-11-02
 
 [8904568732]
-title = "Kolobok
+title = Kolobok
 pages = 4
 copies = 6
-available_copies = 3
+available_copies = 1
+returntime_for_Anna = 2019-11-08
 
